@@ -12,7 +12,7 @@ const getVibeLevel = (score) => {
 export default function ResultDisplay() {
   const { id } = useParams();
   const [data, setData] = useState(null);
-
+  const API = import.meta.env.VITE_API_BASE;
 
 useEffect(() => {
   const userBName = localStorage.getItem(`vibeUserBName-${id}`);
