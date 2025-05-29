@@ -11,13 +11,86 @@ const questions = [
     ],
   },
   {
-    question: 'Choose your beverage:',
-    options: ['Tea', 'Coffee', 'Smoothie', 'Soda'],
+   question: "Your go-to drink?",
+    options: [
+      "Coffee ",
+      "Tea ",
+      "Energy drinks ",
+      "Water (staying hydrated) "
+    ],
   },
   {
-    question: 'Pick your rhythm:',
-    options: ['Early Bird', 'Night Owl', 'Flexible', 'None'],
+   question: "At a party, you're usually...",
+    options: [
+      "The life of the party ",
+      "Having deep conversations in the corner",
+      "On the dance floor ",
+      "Planning the perfect exit time"
+    ],
   },
+  {
+   question: "When you're stressed, you...",
+    options: [
+      "Exercise it out ",
+      "Listen to music ",
+      "Talk to friends ",
+      "Take a long bath "
+    ], 
+  },
+  {
+    question: "Your phone's wallpaper is probably...",
+    options: [
+      "A stunning landscape",
+      "Friends/family photo",
+      "Cute animals",
+      "Minimalist abstract design"
+    ],
+  },
+  {
+    question: "Favorite time of day?",
+    options: [
+      "Early morning sunrise ",
+      "Golden hour afternoon ",
+      "Sunset vibes ",
+      "Late night owl hours "
+    ],
+  },
+  {
+    question: "Perfect date night?",
+    options: [
+      "Cooking together at home",
+      "Concert or live show",
+      "Candlelit dinner",
+      "Outdoor adventure"
+    ],
+  },
+  {
+    question: "Your superpower would be...",
+    options: [
+      "Reading minds ",
+      "Time travel ",
+      "Flying ",
+      "Invisibility "
+    ],
+  },
+  {
+     question: "Favorite season?",
+    options: [
+      "Spring (new beginnings) ",
+      "Summer (beach vibes) ",
+      "Fall (cozy sweaters) ",
+      "Winter (hot cocoa season) "
+    ],
+  },
+  {
+    question: "Your favourite Subject in school is/was...",
+    options: [
+      "Maths",
+      "Sci",
+      "SST",
+      "Language"
+    ],
+  }
 ];
 
 export default function CreateQuiz() {
