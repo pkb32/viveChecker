@@ -1,6 +1,4 @@
-Sure! Here's a more visually appealing version of your README with clearer structure, icons, and improved formatting for readability. This version is ideal for display on platforms like GitHub:
-
----
+ ---
 
 <h1 align="center">🎯 Vibe Check Quiz App</h1>
 <p align="center">A full-stack app to test how well your friends vibe with your personality and music taste 🎧✨</p>
@@ -125,5 +123,3 @@ node index.js
 💡 Feel free to share feedback or suggestions!
 
 ---
-
-Let me know if you'd like this in **PDF**, **Markdown**, or ready for a **GitHub repository landing page**.
