@@ -49,13 +49,20 @@ export default function ResultDisplay() {
   const modalRef = useRef(null);
 
 useEffect(() => {
-  const key = `vibe-userBId-${id}`;
-  let userBId = localStorage.getItem(key);
+ const query = new URLSearchParams(window.location.search);
+let userBId = query.get("user");
 
-  if (!userBId) {
-    userBId = crypto.randomUUID();
-    localStorage.setItem(key, userBId);
-  }
+if (!userBId) {
+  // fallback for same-user testing on same device
+  const key = `vibe-userBId-${id}`;
+  userBId = localStorage.getItem(key);
+}
+
+if (!userBId) {
+  console.error("No userBId found in URL or localStorage");
+  return;
+}
+
 
   // ✅ NOW: fetch result using the userBId
   fetch(`${API}/vibe/${id}?user=${encodeURIComponent(userBId)}`)

@@ -140,7 +140,7 @@ router.get('/:id', async (req, res) => {
     const matchScorePercent = score - spotifyScore;
 
     res.json({
-      matchScore: `${Math.round(matchScorePercent)}%`,
+      matchScore: Math.round(matchScorePercent),
       spotifyScorePercent: spotifyScore.toFixed(2),
       finalScorePercent: score.toFixed(2),
       commonSongs,

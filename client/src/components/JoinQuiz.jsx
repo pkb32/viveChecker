@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-
+import { v4 as uuidv4 } from 'uuid';
 const questions = [
   {
     question: 'Perfect weekend vibes?',
@@ -94,7 +94,6 @@ const questions = [
   }
 ];
 
-
 export default function JoinQuiz() {
   const { id } = useParams();
   const [answers, setAnswers] = useState(Array(questions.length).fill(''));
@@ -106,66 +105,70 @@ export default function JoinQuiz() {
   const [adminName, setAdminName] = useState('Admin');
   const API = import.meta.env.VITE_API_BASE;
   const navigate = useNavigate();
+  const userKey = `vibe-userBId-${id}`;
 
-  // Check if User B has already submitted answers
-useEffect(() => {
-  const userBId = localStorage.getItem('vibe-userBId');
-  if (!userBId) return setLoading(false);
+  useEffect(() => {
+    let userBId = localStorage.getItem(userKey);
+    if (!userBId) return setLoading(false);
+    fetch(`${API}/vibe/${id}?user=${userBId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.finalScorePercent) setAlreadySubmitted(true);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [id]);
 
-  fetch(`${API}/vibe/${id}?user=${userBId}`)
+  useEffect(() => {
+   const storedId = localStorage.getItem(userKey);
+if (storedId) {
+  fetch(`${API}/vibe/${id}?user=${storedId}`)
     .then(res => res.json())
     .then(data => {
-      if (data && data.finalScorePercent) {
-        setAlreadySubmitted(true);
+      if (data && data.user) {
+        setUserBName(data.user); // set name from result
       }
-      setLoading(false);
-    })
-    .catch(() => setLoading(false));
-}, [id]);
+    });
+}
 
-  useEffect(() => {
-    const name = localStorage.getItem(`vibe-userBId`);
-    if (name) setUserBName(name);
+    const adminStored = localStorage.getItem('vibeAdminName');
+    if (adminStored) setAdminName(adminStored);
   }, [id]);
-  useEffect(() => {
-    const storedName = localStorage.getItem('vibeAdminName');
-    if (storedName) setAdminName(storedName);
-  }, []);
 
   const handleSelect = (option) => {
     const updated = [...answers];
     updated[currentQuestion] = option;
     setAnswers(updated);
-
     if (currentQuestion < questions.length - 1) {
-      setTimeout(() => setCurrentQuestion((prev) => prev + 1), 300);
+      setTimeout(() => setCurrentQuestion(prev => prev + 1), 300);
     }
   };
 
-  const handleSubmit = async () => {
-    const userBName = localStorage.getItem(`vibe-userBId`);
-    let userBId = localStorage.getItem('vibe-userBId');
-    if (!userBId) {
-    userBId = crypto.randomUUID(); // or use uuid npm lib
-    localStorage.setItem('vibe-userBId', userBId);
+ const handleSubmit = async () => {
+  let userBId = localStorage.getItem(userKey);
+  if (!userBId) {
+    userBId = uuidv4();
+    localStorage.setItem(userKey, userBId);
   }
-    const res = await fetch(`${API}/vibe/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userBId,
-        userBName,
-        userBAnswers: answers,
-        userBSpotify: spotify,
-      }),
-    });
 
-    if (res.ok) {
-      navigate(`/result/${id}`);
-    } else {
-      alert('Error submitting your answers, maybe already submitted.');
-    }
-  };
+  const res = await fetch(`${API}/vibe/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      userBId,
+      userBName,
+      userBAnswers: answers,
+      userBSpotify: spotify,
+    }),
+  });
+
+  if (res.ok) {
+    navigate(`/result/${id}?user=${userBId}`); // pass userBId in URL
+  } else {
+    alert('Error submitting your answers, maybe already submitted.');
+  }
+};
+
 
   if (loading) return <p className="text-center mt-20 text-lg">Loading...</p>;
 
@@ -185,18 +188,43 @@ useEffect(() => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 flex items-center justify-center p-4">
       <div className="max-w-xl w-full bg-white rounded-2xl shadow-2xl p-8">
-        <h1 className="text-3xl font-bold text-center text-purple-600 mb-6">Join Vibe Check Quiz of {adminName}</h1>
-        <h2 className="text-xl text-center text-gray-700 mb-4">
-          Welcome, {userBName}!, check your vibes with {adminName}
-        </h2>
+        <h1 className="text-3xl font-bold text-center text-purple-600 mb-6">
+          Join Vibe Check Quiz of {adminName}
+        </h1>
 
+        {!userBName && (
+          <div className="mb-6">
+            <label className="block text-gray-700 font-medium mb-2">
+              Your Name
+            </label>
+            <input
+              type="text"
+              value={userBName}
+              onChange={(e) => setUserBName(e.target.value)}
+              placeholder="Enter your name"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
+            />
+            <button
+              onClick={() => {
+                localStorage.setItem(userKey, userBName);
+                setCurrentQuestion(0); // start quiz
+              }}
+              disabled={!userBName.trim()}
+              className="mt-2 w-full py-2 rounded bg-purple-600 text-white font-bold disabled:bg-gray-400"
+            >
+              Start Quiz
+            </button>
+          </div>
+        )}
 
-        {currentQuestion < questions.length && (
+        {userBName && currentQuestion < questions.length && (
           <>
+            <h2 className="text-xl text-center text-gray-700 mb-4">
+              Welcome, {userBName}!
+            </h2>
             <div className="text-right text-sm text-gray-500 mb-2">
               Question {currentQuestion + 1} of {questions.length}
             </div>
-
             <div className="mb-6">
               <h2 className="text-lg font-semibold text-gray-800 mb-4">
                 {questions[currentQuestion].question}
@@ -220,31 +248,32 @@ useEffect(() => {
           </>
         )}
 
-        {currentQuestion === questions.length - 1 && answers[currentQuestion] && (
-          <div className="mt-6">
-            <label className="block text-gray-700 font-medium mb-2">
-              Your Spotify songs playlist URL
-            </label>
-            <input
-              value={spotify}
-              onChange={(e) => setSpotify(e.target.value)}
-              placeholder="Enter your Spotify playlist URL"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
-            />
-
-            <button
-              onClick={handleSubmit}
-              disabled={!spotify.trim()}
-              className={`w-full py-3 mt-4 rounded-xl font-bold transition ${
-                spotify.trim()
-                  ? 'bg-purple-600 text-white hover:bg-purple-700'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              }`}
-            >
-              Submit Answers
-            </button>
-          </div>
-        )}
+        {userBName &&
+          currentQuestion === questions.length - 1 &&
+          answers[currentQuestion] && (
+            <div className="mt-6">
+              <label className="block text-gray-700 font-medium mb-2">
+                Your Spotify songs playlist URL (optional)
+              </label>
+              <input
+                value={spotify}
+                onChange={(e) => setSpotify(e.target.value)}
+                placeholder="Enter your Spotify playlist URL"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
+              />
+              <button
+                onClick={handleSubmit}
+                disabled={!answers.every(Boolean)}
+                className={`w-full py-3 mt-4 rounded-xl font-bold transition ${
+                  answers.every(Boolean)
+                    ? 'bg-purple-600 text-white hover:bg-purple-700'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
+              >
+                Submit Answers
+              </button>
+            </div>
+          )}
       </div>
     </div>
   );
