@@ -136,7 +136,7 @@ export default function CreateQuiz() {
       body: JSON.stringify({
         userAName: adminName,
         userAAnswers: answers,
-        userASpotify: spotify,
+        userASpotify: spotify || '',
       }),
     });
     const { sessionId } = await res.json();
@@ -187,7 +187,7 @@ export default function CreateQuiz() {
             {currentQuestion === questions.length - 1 && answers[currentQuestion] && (
               <div className="mt-6">
                 <label className="block text-gray-700 font-medium mb-2">
-                  Your Spotify songs playlist URL
+                  Your Spotify songs playlist URL (optional)
                 </label>
                 <input
                   value={spotify}
@@ -198,12 +198,7 @@ export default function CreateQuiz() {
 
                 <button
                   onClick={handleSubmit}
-                  disabled={!spotify.trim()}
-                  className={`w-full py-3 mt-4 rounded-xl font-bold transition ${
-                    spotify.trim()
-                      ? 'bg-purple-600 text-white hover:bg-purple-700'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
+                  className={`w-full py-3 mt-4 rounded-xl font-bold bg-purple-600 text-white hover:bg-purple-700 transition`}
                 >
                   Create Quiz & Get Link
                 </button>
