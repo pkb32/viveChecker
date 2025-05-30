@@ -37,9 +37,10 @@ router.put('/:id', async (req, res) => {
     const { userBId,userBName, userBAnswers, userBSpotify } = req.body;
 
     // Check if this user already submitted, and allow different user but same nickname
-    if (session.responses.find(r => r.name === userBName)) {
+    if (session.responses.find(r => r.userBId === req.body.userBId)) {
       return res.status(400).json({ message: "You have already submitted your answers." });
     }
+
 
     const userBSongs = userBSpotify
       ? (await getPlaylistTracks(userBSpotify)).map(s => s.toLowerCase().trim())
@@ -64,7 +65,7 @@ router.put('/:id', async (req, res) => {
     const finalScorePercent = baseScorePercent + spotifyScorePercent;
 
     session.responses.push({
-      userId: userBId,
+      userBId: userBId,
       name: userBName,
       answers: userBAnswers,
       spotifyUrl: userBSpotify,
@@ -81,6 +82,25 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+// Get all results
+router.get('/results/:id', async (req, res) => {
+  try {
+    const session = await Session.findById(req.params.id);
+    if (!session) return res.sendStatus(404);
+
+    const results = session.responses.map(r => ({
+      name: r.name,
+      score: r.score.toFixed(2),
+      commonSongs: r.commonSongs,
+    }));
+
+    res.json({ adminName: session.userAName, results });
+  } catch (error) {
+    console.error('Error fetching all results:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // Get result for a specific user
 router.get('/:id', async (req, res) => {
   try {
@@ -92,7 +112,7 @@ router.get('/:id', async (req, res) => {
       return res.status(400).json({ message: "User name is required in query (?user=...)" });
     }
 
-    const result = session.responses.find(r => r.name === user);
+    const result = session.responses.find(r => r.userBId === user);
     if (!result) {
       return res.json({ message: "Waiting for this user to submit answers." });
     }
@@ -120,22 +140,6 @@ router.get('/:id', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
-router.get('/results/:id', async (req, res) => {
-  try {
-    const session = await Session.findById(req.params.id);
-    if (!session) return res.sendStatus(404);
 
-    const results = session.responses.map(r => ({
-      name: r.name,
-      score: r.score.toFixed(2),
-      commonSongs: r.commonSongs,
-    }));
-
-    res.json({ adminName: session.userAName, results });
-  } catch (error) {
-    console.error('Error fetching all results:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
 
 module.exports = router;

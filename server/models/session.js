@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const responseSchema = new mongoose.Schema({
+  userBId: { type: String, required: true  },
   name: String,
   answers: [String],
   spotifyUrl: String,

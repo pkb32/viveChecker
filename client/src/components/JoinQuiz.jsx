@@ -108,17 +108,20 @@ export default function JoinQuiz() {
   const navigate = useNavigate();
 
   // Check if User B has already submitted answers
-  useEffect(() => {
-    fetch(`${API}/vibe/${id}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.userBAnswers && data.userBAnswers.length) {
-          setAlreadySubmitted(true);
-        }
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, [id]);
+useEffect(() => {
+  const userBId = localStorage.getItem('vibe-userBId');
+  if (!userBId) return setLoading(false);
+
+  fetch(`${API}/vibe/${id}?user=${userBId}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data && data.finalScorePercent) {
+        setAlreadySubmitted(true);
+      }
+      setLoading(false);
+    })
+    .catch(() => setLoading(false));
+}, [id]);
 
   useEffect(() => {
     const name = localStorage.getItem(`vibeUserBName-${id}`);
