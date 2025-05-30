@@ -128,11 +128,13 @@ export default function JoinQuiz() {
   if (name) setUserBName(name);
 
   // 🔧 Fetch admin name from server
-  fetch(`${API}/vibe/${id}`)
+  fetch(`${API}/vibe/info/${id}`)
     .then(res => res.json())
     .then(data => {
       if (data.userAName) {
         setAdminName(data.userAName);
+      } else{
+        console.warn("userAName not found in the session")
       }
     })
     .catch((err) => {

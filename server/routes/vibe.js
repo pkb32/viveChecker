@@ -135,6 +135,22 @@ router.get('/results/:id', async (req, res) => {
   }
 });
 
+// Get quiz details (for Join screen)
+router.get('/info/:id', async (req, res) => {
+  try {
+    const session = await Session.findById(req.params.id);
+    if (!session) return res.status(404).json({ message: 'Session not found' });
+
+    res.json({
+      userAName: session.userAName,
+    });
+  } catch (error) {
+    console.error('Error fetching quiz info:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
 // Get result for a specific user
 router.get('/:id', async (req, res) => {
   try {
