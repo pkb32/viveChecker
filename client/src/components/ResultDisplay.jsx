@@ -138,6 +138,7 @@ useEffect(() => {
         ref={resultRef}
         className={`max-w-xl w-full h-full max-h-[90vh] overflow-y-auto no-scrollbar p-8 text-center rounded-2xl shadow-lg bg-gradient-to-br ${color} text-white`}
       >
+       {console.log(data) }
         <div className="text-3xl sm:text-4xl mb-4">🏆</div>
         <h1 className="text-xl sm:text-2xl font-semibold">
           Vibe Check Complete!

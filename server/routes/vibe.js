@@ -109,32 +109,41 @@ router.get('/:id', async (req, res) => {
   try {
     const { user } = req.query;
     const session = await Session.findById(req.params.id);
-    if (!session) return res.sendStatus(404);
+
+    if (!session) {
+      console.error('Session not found for ID:', req.params.id);
+      return res.sendStatus(404);
+    }
 
     if (!user) {
-      return res.status(400).json({ message: "User name is required in query (?user=...)" });
+      console.error('User ID missing in query param');
+      return res.status(400).json({ message: "User ID is required in query (?user=...)" });
     }
 
     const result = session.responses.find(r => r.userBId === user);
+
     if (!result) {
+      console.log('No result found for userBId:', user);
       return res.json({ message: "Waiting for this user to submit answers." });
     }
 
+    const commonSongs = Array.isArray(result.commonSongs) ? result.commonSongs : [];
+    const score = typeof result.score === 'number' ? result.score : 0;
 
     let spotifyScore = 0;
-    if (result.commonSongs.length >= 3) {
+    if (commonSongs.length >= 3) {
       spotifyScore = 20;
-    } else if (result.commonSongs.length >= 1) {
+    } else if (commonSongs.length >= 1) {
       spotifyScore = 10;
     }
 
-    const matchScorePercent = result.score - spotifyScore;
+    const matchScorePercent = score - spotifyScore;
 
     res.json({
       matchScore: `${Math.round(matchScorePercent)}%`,
-      spotifyScorePercent: (result.score - matchScorePercent).toFixed(2),
-      finalScorePercent: result.score.toFixed(2),
-      commonSongs: result.commonSongs,
+      spotifyScorePercent: spotifyScore.toFixed(2),
+      finalScorePercent: score.toFixed(2),
+      commonSongs,
       user: result.name,
       adminName: session.userAName,
     });
