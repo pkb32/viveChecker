@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { v4 as uuidv4 } from 'uuid';
 
 export default function EnterJoinName() {
   const [name, setName] = useState('');
@@ -8,7 +9,11 @@ export default function EnterJoinName() {
 
   const handleStart = () => {
     if (name.trim()) {
-      localStorage.setItem(`vibeUserBName-${id}`, name.trim());
+      const userKey = `vibe-userBId-${id}`;
+      const userNameKey = `vibe-UserBName-${id}`;
+      const userBId = uuidv4();
+      localStorage.setItem(userKey, userBId);
+      localStorage.setItem(userNameKey, name);
       navigate(`/vibe/${id}`);
     }
   };
