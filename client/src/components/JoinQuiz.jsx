@@ -124,7 +124,7 @@ useEffect(() => {
 }, [id]);
 
   useEffect(() => {
-    const name = localStorage.getItem(`vibeUserBName-${id}`);
+    const name = localStorage.getItem(`vibe-userBId`);
     if (name) setUserBName(name);
   }, [id]);
   useEffect(() => {
@@ -143,7 +143,7 @@ useEffect(() => {
   };
 
   const handleSubmit = async () => {
-    const userBName = localStorage.getItem(`vibeUserBName-${id}`);
+    const userBName = localStorage.getItem(`vibe-userBId`);
     let userBId = localStorage.getItem('vibe-userBId');
     if (!userBId) {
     userBId = crypto.randomUUID(); // or use uuid npm lib

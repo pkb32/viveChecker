@@ -9,7 +9,7 @@ router.post('/', async (req, res) => {
     const { userAName, userAAnswers, userASpotify } = req.body;
 
     const userASongs = userASpotify
-      ? (await getPlaylistTracks(userASpotify)).map(s => s.toLowerCase().trim())
+      ? (await getPlaylistTracks(userASpotify)).map(s => (s || '').trim().toLowerCase())
       : [];
 
     const session = new Session({
@@ -43,16 +43,19 @@ router.put('/:id', async (req, res) => {
 
 
     const userBSongs = userBSpotify
-      ? (await getPlaylistTracks(userBSpotify)).map(s => s.toLowerCase().trim())
+      ? (await getPlaylistTracks(userBSpotify)).map(s => (s || '').trim().toLowerCase())
       : [];
 
     const commonSongs = session.userASongs.filter(song =>
       userBSongs.includes(song)
     );
 
-    const matchCount = session.userAAnswers.reduce((score, ans, i) => (
-      score + (ans === userBAnswers[i] ? 1 : 0)
-    ), 0);
+    const matchCount = session.userAAnswers.reduce((score, ans, i) => {
+  const answerA = (ans || '').trim().toLowerCase();
+  const answerB = (userBAnswers[i] || '').trim().toLowerCase();
+  return score + (answerA === answerB ? 1 : 0);
+}, 0);
+
 
     const baseScorePercent = (matchCount / session.userAAnswers.length) * 80;
     

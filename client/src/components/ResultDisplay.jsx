@@ -48,15 +48,28 @@ export default function ResultDisplay() {
   const API = import.meta.env.VITE_API_BASE;
   const modalRef = useRef(null);
 
-  useEffect(() => {
-    const userBName = localStorage.getItem(`vibeUserBName-${id}`);
-    fetch(`${API}/vibe/${id}?user=${encodeURIComponent(userBName)}`)
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("API response:", data);
-        setData(data);
-      });
-  }, [id]);
+useEffect(() => {
+  const key = `vibe-userBId-${id}`;
+  let userBId = localStorage.getItem(key);
+
+  if (!userBId) {
+    userBId = crypto.randomUUID();
+    localStorage.setItem(key, userBId);
+  }
+
+  // ✅ NOW: fetch result using the userBId
+  fetch(`${API}/vibe/${id}?user=${encodeURIComponent(userBId)}`)
+    .then((res) => res.json())
+    .then((data) => {
+      console.log("Fetched result:", data);
+      setData(data);
+    })
+    .catch((err) => {
+      console.error("Error fetching result:", err);
+    });
+}, [id]);
+
+
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -116,7 +129,7 @@ export default function ResultDisplay() {
     );
   }
 
-  const score = parseFloat(data.finalScorePercent);
+  const score = parseFloat(data.finalScorePercent || 0);
   const { level, emoji, color } = getVibeLevel(score);
 
   return (
@@ -157,16 +170,16 @@ export default function ResultDisplay() {
           </p>
         </div>
 
-        {data.commonSongs.length > 0 && (
-          <div className="mt-6 bg-white text-gray-800 rounded-lg p-4 text-left">
-            <h3 className="font-semibold mb-2">Common Songs:</h3>
-            <ul className="list-disc list-inside space-y-1 text-sm sm:text-base">
-              {data.commonSongs.map((song, i) => (
-                <li key={i}>{song}</li>
-              ))}
-            </ul>
-          </div>
-        )}
+        {Array.isArray(data?.commonSongs) && data.commonSongs.length > 0 && (
+  <div className="mt-6 bg-white text-gray-800 rounded-lg p-4 text-left">
+    <h3 className="font-semibold mb-2">Common Songs:</h3>
+    <ul className="list-disc list-inside space-y-1 text-sm sm:text-base">
+      {data.commonSongs.map((song, i) => (
+        <li key={i}>{song}</li>
+      ))}
+    </ul>
+  </div>
+)}
 
         <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8">
           <button
