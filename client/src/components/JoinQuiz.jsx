@@ -141,10 +141,16 @@ export default function JoinQuiz() {
 
   const handleSubmit = async () => {
     const userBName = localStorage.getItem(`vibeUserBName-${id}`);
+    let userBId = localStorage.getItem('vibe-userBId');
+    if (!userBId) {
+    userBId = crypto.randomUUID(); // or use uuid npm lib
+    localStorage.setItem('vibe-userBId', userBId);
+  }
     const res = await fetch(`${API}/vibe/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        userBId,
         userBName,
         userBAnswers: answers,
         userBSpotify: spotify,
