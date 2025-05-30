@@ -34,9 +34,9 @@ router.put('/:id', async (req, res) => {
     const session = await Session.findById(req.params.id);
     if (!session) return res.sendStatus(404);
 
-    const { userBName, userBAnswers, userBSpotify } = req.body;
+    const { userBId,userBName, userBAnswers, userBSpotify } = req.body;
 
-    // Check if this user already submitted
+    // Check if this user already submitted, and allow different user but same nickname
     if (session.responses.find(r => r.name === userBName)) {
       return res.status(400).json({ message: "You have already submitted your answers." });
     }
@@ -64,6 +64,7 @@ router.put('/:id', async (req, res) => {
     const finalScorePercent = baseScorePercent + spotifyScorePercent;
 
     session.responses.push({
+      userId: userBId,
       name: userBName,
       answers: userBAnswers,
       spotifyUrl: userBSpotify,
