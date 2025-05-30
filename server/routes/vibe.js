@@ -3,23 +3,49 @@ const router = express.Router();
 const Session = require('../models/session');
 const { getPlaylistTracks } = require('../services/spotifyService.js');
 
-// Create quiz (User A)
-router.post('/', async (req, res) => {
+//started
+router.post('/start', async (req, res) => {
   try {
-    const { userAName, userAAnswers, userASpotify } = req.body;
-
-    const userASongs = userASpotify
-      ? (await getPlaylistTracks(userASpotify)).map(s => (s || '').trim().toLowerCase())
-      : [];
+    const { userAName } = req.body;
 
     const session = new Session({
       userAName,
-      userAAnswers,
-      userASpotify,
-      userASongs,
+      userAAnswers: [],
+      userASpotify: '',
+      userASongs: [],
       responses: [],
     });
 
+    await session.save();
+    res.json({ sessionId: session._id });
+  } catch (error) {
+    console.error('Error starting session:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+//ended
+
+
+// Create quiz (User A)
+router.post('/', async (req, res) => {
+  try {
+    const { sessionId, userAName, userAAnswers, userASpotify } = req.body;
+if (!sessionId) {
+  return res.status(400).json({ message: "Session ID missing" });
+}
+    const userASongs = userASpotify
+      ? (await getPlaylistTracks(userASpotify)).map(s => (s || '').trim().toLowerCase())
+      : [];
+//updated
+   const session = await Session.findById(sessionId);
+    if (!session) return res.status(404).json({ message: "Session not found" });
+
+    session.userAName = userAName;
+    session.userAAnswers = userAAnswers;
+    session.userASpotify = userASpotify;
+    session.userASongs = userASongs;
+
+//end
     await session.save();
     res.json({ sessionId: session._id });
   } catch (error) {
@@ -57,7 +83,12 @@ router.put('/:id', async (req, res) => {
 }, 0);
 
 
-    const baseScorePercent = (matchCount / session.userAAnswers.length) * 80;
+    let baseScorePercent = 0;
+if (Array.isArray(session.userAAnswers) && session.userAAnswers.length > 0) {
+  baseScorePercent = (matchCount / session.userAAnswers.length) * 80;
+} else {
+  console.warn('Warning: No questions found for User A!');
+}
     
     let spotifyScorePercent = 0;
     if (commonSongs.length >= 3) {
@@ -66,15 +97,15 @@ router.put('/:id', async (req, res) => {
       spotifyScorePercent = 10;
     }
     const finalScorePercent = baseScorePercent + spotifyScorePercent;
-
+const safeScore = isNaN(finalScorePercent) ? 0 : finalScorePercent;
     session.responses.push({
       userBId: userBId,
       name: userBName,
       answers: userBAnswers,
       spotifyUrl: userBSpotify,
       songs: userBSongs,
-      score: finalScorePercent,
-      commonSongs
+      score: safeScore,
+      commonSongs: commonSongs,
     });
 
     await session.save();

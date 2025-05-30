@@ -10,7 +10,7 @@ export default function App() {
     <Router>
      <Routes>
       <Route path="/" element={<EnterName />} />
-      <Route path="/quiz" element={<CreateQuiz />} />
+      <Route path="/quiz/:sessionId" element={<CreateQuiz />} />
       <Route path="/join/:id" element={<EnterJoinName />} />
       <Route path="/vibe/:id" element={<JoinQuiz />} />
       <Route path="/result/:id" element={<ResultDisplay />} />

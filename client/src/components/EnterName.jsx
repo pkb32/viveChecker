@@ -5,12 +5,25 @@ export default function EnterName() {
   const [name, setName] = useState('');
   const navigate = useNavigate();
 
-  const handleStart = () => {
-    if (name.trim()) {
-      localStorage.setItem('vibeAdminName', name.trim());
-      navigate('/quiz');
-    }
-  };
+const handleStart = async () => {
+  if (!name.trim()) return;
+
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_BASE}/vibe/start`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userAName: name.trim() }),
+    });
+
+    const { sessionId } = await res.json();
+    localStorage.setItem('vibeAdminName', name.trim());
+    navigate(`/quiz/${sessionId}`);
+  } catch (error) {
+    console.error('Error starting session:', error);
+    alert('Failed to start session. Try again.');
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 p-4">

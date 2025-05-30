@@ -100,22 +100,36 @@ export default function CreateQuiz() {
   const [sessionId, setSessionId] = useState(null);
   const [adminName, setAdminName] = useState('Admin');
   const [allResults, setAllResults] = useState([]);
+  const [submitted, setSubmitted] = useState(false);
   const API = import.meta.env.VITE_API_BASE;
+
   useEffect(() => {
     const storedName = localStorage.getItem('vibeAdminName');
     if (storedName) setAdminName(storedName);
   }, []);
 
   useEffect(() => {
+    // Automatically create a new session on component mount
+    const createSession = async () => {
+      const res = await fetch(`${API}/vibe/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userAName: adminName }),
+      });
+      const data = await res.json();
+      setSessionId(data.sessionId);
+    };
+
+    if (!sessionId) createSession();
+  }, [adminName]);
+
+  useEffect(() => {
     if (!sessionId) return;
     const interval = setInterval(() => {
       fetch(`${API}/vibe/results/${sessionId}`)
         .then(res => res.json())
-        .then(data => {
-          setAllResults(data.results || []);
-        });
-    }, 4000); // poll every 4s
-
+        .then(data => setAllResults(data.results || []));
+    }, 4000);
     return () => clearInterval(interval);
   }, [sessionId]);
 
@@ -123,24 +137,23 @@ export default function CreateQuiz() {
     const updated = [...answers];
     updated[currentQuestion] = option;
     setAnswers(updated);
-
     if (currentQuestion < questions.length - 1) {
       setTimeout(() => setCurrentQuestion(prev => prev + 1), 300);
     }
   };
 
   const handleSubmit = async () => {
-    const res = await fetch(`${API}/vibe`, {
+    await fetch(`${API}/vibe`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         userAName: adminName,
         userAAnswers: answers,
         userASpotify: spotify || '',
+        sessionId,
       }),
     });
-    const { sessionId } = await res.json();
-    setSessionId(sessionId);
+    setSubmitted(true);
   };
 
   return (
@@ -153,63 +166,57 @@ export default function CreateQuiz() {
           Welcome, {adminName}!
         </h2>
 
-        {!sessionId ? (
+        {sessionId && currentQuestion < questions.length && !submitted && (
           <>
-            {currentQuestion < questions.length && (
-              <>
-                <div className="text-right text-sm text-gray-500 mb-2">
-                  Question {currentQuestion + 1} of {questions.length}
-                </div>
-
-                <div className="mb-6">
-                  <h2 className="text-lg font-semibold text-gray-800 mb-4">
-                    {questions[currentQuestion].question}
-                  </h2>
-                  <div className="grid grid-cols-1 gap-3">
-                    {questions[currentQuestion].options.map((opt, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => handleSelect(opt)}
-                        className={`w-full px-4 py-3 rounded-lg border text-left font-medium transition ${
-                          answers[currentQuestion] === opt
-                            ? 'bg-purple-600 text-white border-purple-600'
-                            : 'bg-white text-gray-800 border-gray-300 hover:bg-purple-50'
-                        }`}
-                      >
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
-
-            {currentQuestion === questions.length - 1 && answers[currentQuestion] && (
-              <div className="mt-6">
-                <label className="block text-gray-700 font-medium mb-2">
-                  Your Spotify songs playlist URL (optional)
-                </label>
-                <input
-                  value={spotify}
-                  onChange={(e) => setSpotify(e.target.value)}
-                  placeholder="Enter your Spotify playlist URL"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
-                />
-
-                <button
-                  onClick={handleSubmit}
-                  className={`w-full py-3 mt-4 rounded-xl font-bold bg-purple-600 text-white hover:bg-purple-700 transition`}
-                >
-                  Create Quiz & Get Link
-                </button>
+            <div className="text-right text-sm text-gray-500 mb-2">
+              Question {currentQuestion + 1} of {questions.length}
+            </div>
+            <div className="mb-6">
+              <h2 className="text-lg font-semibold text-gray-800 mb-4">
+                {questions[currentQuestion].question}
+              </h2>
+              <div className="grid grid-cols-1 gap-3">
+                {questions[currentQuestion].options.map((opt, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleSelect(opt)}
+                    className={`w-full px-4 py-3 rounded-lg border text-left font-medium transition ${
+                      answers[currentQuestion] === opt
+                        ? 'bg-purple-600 text-white border-purple-600'
+                        : 'bg-white text-gray-800 border-gray-300 hover:bg-purple-50'
+                    }`}
+                  >
+                    {opt}
+                  </button>
+                ))}
               </div>
-            )}
+            </div>
           </>
-        ) : (
-          <div className="text-center">
-            <h2 className="text-xl font-semibold mb-4">
-              Share this link with your friend:
-            </h2>
+        )}
+
+        {sessionId && currentQuestion === questions.length - 1 && answers[currentQuestion] && !submitted && (
+          <div className="mt-6">
+            <label className="block text-gray-700 font-medium mb-2">
+              Your Spotify playlist URL (optional)
+            </label>
+            <input
+              value={spotify}
+              onChange={(e) => setSpotify(e.target.value)}
+              placeholder="Enter your Spotify playlist URL"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
+            />
+            <button
+              onClick={handleSubmit}
+              className="w-full py-3 mt-4 rounded-xl font-bold bg-purple-600 text-white hover:bg-purple-700 transition"
+            >
+              Create Quiz & Get Link
+            </button>
+          </div>
+        )}
+
+        {sessionId &&submitted && (
+          <div className="text-center mt-6">
+            <h2 className="text-xl font-semibold mb-2">Share this link with your friend:</h2>
             <a
               href={`${window.location.origin}/join/${sessionId}`}
               className="text-purple-700 underline break-words"
