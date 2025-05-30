@@ -124,11 +124,22 @@ export default function JoinQuiz() {
   }, [id]);
 
   useEffect(() => {
-    const name = localStorage.getItem(userNameKey);
-    const adminStored = localStorage.getItem('vibeAdminName');
-    if (name) setUserBName(name);
-    if (adminStored) setAdminName(adminStored);
-  }, [id]);
+  const name = localStorage.getItem(userNameKey);
+  if (name) setUserBName(name);
+
+  // 🔧 Fetch admin name from server
+  fetch(`${API}/vibe/${id}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.userAName) {
+        setAdminName(data.userAName);
+      }
+    })
+    .catch((err) => {
+      console.error('Error fetching quiz owner:', err);
+    });
+}, [id]);
+
 
   const handleSelect = (option) => {
     const updated = [...answers];
