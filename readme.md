@@ -64,7 +64,6 @@ The **Vibe Check Quiz** lets you create a personality-based quiz and optionally 
 /vibe-check-app
 ├── /client         → React frontend
 ├── /server         → Express backend
-├── .env.example    → Environment variable template
 └── README.md       → This file
 ```
 
@@ -119,7 +118,7 @@ node index.js
 
 ## 📬 Contact
 
-📧 Reach me at: [prayash@example.com](mailto:prayash@example.com)
+📧 Reach me at: [prayashkumarb@gmail.com](mailto:prayashkumarb@gmail.com)
 💡 Feel free to share feedback or suggestions!
 
 ---
